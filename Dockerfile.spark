@@ -1,0 +1,9 @@
+FROM bitnami/spark:latest
+
+USER root
+COPY spark_jar_deps/ /opt/bitnami/spark/jars/
+
+
+RUN pip install cython==0.29.35
+RUN pip install pymssql --no-build-isolation
+RUN pip install apache-airflow apache-airflow-providers-apache-spark pyspark delta-spark

@@ -1,0 +1,21 @@
+FROM apache/airflow:2.7.1-python3.11
+
+USER root
+
+RUN apt-get update && \
+    apt-get install -y gcc python3-dev openjdk-11-jdk && \
+    # apt-get install libxml2-dev libxslt1-dev zlib1g-dev libffi-dev libssl-dev &&\
+    apt-get clean
+
+# COPY requirements.txt requirements.txt
+# RUN pip install -r requirements.txt
+
+# Set JAVA_HOME environment variable
+ENV JAVA_HOME /usr/lib/jvm/java-11-openjdk-arm64
+
+# pymssql==2.2.8
+
+USER airflow
+RUN pip install cython==0.29.35
+RUN pip install pymssql --no-build-isolation
+RUN pip install apache-airflow apache-airflow-providers-apache-spark pyspark delta-spark 

@@ -1,0 +1,100 @@
+version: '3'
+
+x-spark-common: &spark-common
+  build:
+    context: .
+    dockerfile: Dockerfile.spark
+  volumes:
+    - ./jobs:/opt/bitnami/spark/jobs
+    - lakehouse:/opt/bitnami/spark/my_lakehouse
+  networks:
+    - ani
+
+x-airflow-common: &airflow-common
+  build:
+    context: .
+    dockerfile: Dockerfile.airflow
+  env_file:
+    - airflow.env
+  volumes:
+    - ./jobs:/opt/airflow/jobs
+    - ./dags:/opt/airflow/dags
+    - ./logs:/opt/airflow/logs
+    - ./spark_jar_deps:/opt/bitnami/spark/jars
+    - lakehouse:/opt/bitnami/spark/my_lakehouse
+  depends_on:
+    - postgres
+  networks:
+    - ani
+
+services:
+  spark-master:
+    <<: *spark-common
+    command: bin/spark-class org.apache.spark.deploy.master.Master
+    ports:
+      - "9090:8080"
+      - "7077:7077"
+
+  spark-worker-1:
+    <<: *spark-common
+    command: bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
+    depends_on:
+      - spark-master
+    environment:
+      SPARK_MODE: worker
+      SPARK_WORKER_CORES: 2
+      SPARK_WORKER_MEMORY: 1g
+      SPARK_MASTER_URL: spark://spark-master:7077
+  
+  # spark-worker-2:
+  #   <<: *spark-common
+  #   command: bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
+  #   depends_on:
+  #     - spark-master
+  #   volumes:
+  #     - lakehouse:/opt/bitnami/spark/my_lakehouse
+  #   environment:
+  #     SPARK_MODE: worker
+  #     SPARK_WORKER_CORES: 2
+  #     SPARK_WORKER_MEMORY: 1g
+  #     SPARK_MASTER_URL: spark://spark-master:7077
+
+  postgres:
+    image: postgres:14.0
+    environment:
+      - POSTGRES_USER=airflow
+      - POSTGRES_PASSWORD=airflow
+      - POSTGRES_DB=airflow
+    networks:
+      - ani
+
+  webserver:
+    <<: *airflow-common
+    command: webserver
+    ports:
+      - "8080:8080"
+    depends_on:
+      - scheduler
+
+  scheduler:
+    <<: *airflow-common
+    user: root
+    command: bash -c " chmod -R 777 /opt/bitnami/spark/my_lakehouse/ &&  airflow db migrate && airflow users create --username admin --firstname Aniketh --lastname Deshpande --role Admin --email anikethsd@gmail.com --password admin@123 && airflow scheduler"
+
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=pasS_123
+      - MSSQL_AGENT_ENABLED=true
+    ports:
+      - "1433:1433"
+    networks:
+      - ani
+
+networks:
+  ani:
+
+volumes:
+  lakehouse:
+    driver: local

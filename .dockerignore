@@ -1,0 +1,7 @@
+lhvenv
+__pycache__
+*.pyo
+.git
+*.pyc
+
+airflow.db

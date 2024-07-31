@@ -1,0 +1,5 @@
+apache-airflow 
+apache-airflow-providers-apache-spark 
+pyspark
+delta-spark
+pymssql==2.2.8
