@@ -3,7 +3,7 @@ version: '3'
 x-spark-common: &spark-common
   build:
     context: .
-    dockerfile: Dockerfile.spark
+    dockerfile: Dockerfiles/Dockerfile.spark
   volumes:
     - ./jobs:/opt/bitnami/spark/jobs
     - lakehouse:/opt/bitnami/spark/my_lakehouse
@@ -13,7 +13,7 @@ x-spark-common: &spark-common
 x-airflow-common: &airflow-common
   build:
     context: .
-    dockerfile: Dockerfile.airflow
+    dockerfile: Dockerfiles/Dockerfile.airflow
   env_file:
     - airflow.env
   volumes:
