@@ -37,8 +37,11 @@ This project involves the extraction, transformation, and loading (ETL) of sales
 
 ### 3. Orchestration
    - **Airflow DAGs:**
-     - The ETL workflow is orchestrated using Airflow DAGs, scheduled to run hourly.
+     - The ETL workflow is orchestrated using Airflow DAGs, scheduled to run daily.
      - Each job ensures data integrity and consistency across the data pipeline.
+<img width="748" alt="image" src="https://github.com/user-attachments/assets/b191e821-aa19-4d57-b284-a835573d89b6">
+
+     
 
 ## Star Schema Details
 
